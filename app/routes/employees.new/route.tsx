@@ -16,8 +16,8 @@ export const action: ActionFunction = async ({ request }) => {
   const father_name = formData.get("father_name");
   // Optional fields
   const end_date = formData.get("end_date");
-  const cv_path = formData.get("cv_path");
-  const photo_path = formData.get("photo_path");
+  const cv_path = formData.get("cv");
+  const photo_path = formData.get("photo");
 
   // Check if required fields are inserted
   if (
@@ -28,8 +28,7 @@ export const action: ActionFunction = async ({ request }) => {
     !job_title ||
     !department ||
     !salary ||
-    !start_date ||
-    !father_name
+    !start_date
   ) {
     return new Response("Missing required fields", { status: 400 });
   }
@@ -52,8 +51,8 @@ export const action: ActionFunction = async ({ request }) => {
       start_date,
       end_date,
       father_name,
-      cv_path,
-      photo_path
+      cv,
+      photo
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       full_name,
@@ -76,7 +75,7 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function NewEmployeePage() {
   return (
-    <div className="container mx-auto p-4 w-auto">
+    <div className="container mx-auto p-4 w-auto h-full">
       <h1 className="text-3xl font-bold mb-6">Create New Employee</h1>
       <Form method="post" className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Full Name */}
@@ -272,10 +271,10 @@ export default function NewEmployeePage() {
           />
         </div>
         {/* Submit Button */}
-        <div className="col-span-3 flex justify-center">
+        <div className="col-span-1 md:col-span-3 flex justify-center">
           <button
             type="submit"
-            className="w-xs py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
+            className="w-auto py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
           >
             Create Employee
           </button>
