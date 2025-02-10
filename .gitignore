@@ -7,3 +7,6 @@
 
 # Database
 *.sqlite
+
+*.png
+*.jpg
