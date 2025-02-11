@@ -47,12 +47,12 @@ export default function TimesheetView() {
           )}
         </div>
       </div>
-      <div className="mt-6 flex justify-end space-x-4">
+      <div className="mt-6 flex justify-center space-x-4">
         <Link to="/employees" className="text-blue-600 hover:underline">
           Employees
         </Link>
         <Link to="/timesheets" className="text-blue-600 hover:underline">
-          Timesheets
+          All Timesheets
         </Link>
         <Link
           to={`/timesheets/${timesheet.id}/edit`}
