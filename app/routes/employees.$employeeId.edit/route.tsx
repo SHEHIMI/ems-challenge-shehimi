@@ -1,8 +1,19 @@
+import { useLoaderData, useActionData, useNavigate } from "react-router-dom";
+import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { useEffect, useState } from "react";
-import { useActionData, useNavigate } from "react-router-dom";
-import type { ActionFunction } from "@remix-run/node";
 
-// helper
+export const loader: LoaderFunction = async ({ params }) => {
+  const { getDB } = await import("~/db/getDB");
+  const db = await getDB();
+  const employee = await db.get("SELECT * FROM employees WHERE id = ?", [
+    params.employeeId,
+  ]);
+  if (!employee) {
+    throw new Response("Employee not found", { status: 404 });
+  }
+  return { employee };
+};
+
 async function streamToString(
   readable: NodeJS.ReadableStream
 ): Promise<string> {
@@ -13,8 +24,9 @@ async function streamToString(
   return Buffer.concat(chunks).toString("utf-8");
 }
 
-export const action: ActionFunction = async ({ request }) => {
-  const { unstable_parseMultipartFormData } = await import("@remix-run/node");
+export const action: ActionFunction = async ({ request, params }) => {
+  const { unstable_parseMultipartFormData, unstable_createFileUploadHandler } =
+    await import("@remix-run/node");
   const fs = await import("fs");
   const path = await import("path");
 
@@ -22,8 +34,7 @@ export const action: ActionFunction = async ({ request }) => {
     if (!part.filename) {
       return await streamToString(part.data);
     }
-    // For file parts:
-    const uploadsDir = path.join(process.cwd(), "app", "public");
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
@@ -36,7 +47,7 @@ export const action: ActionFunction = async ({ request }) => {
     }
     const buffer = Buffer.concat(chunks);
     fs.writeFileSync(filePath, buffer);
-    return `/public/${fileName}`;
+    return `/uploads/${fileName}`;
   }
 
   let formData;
@@ -50,7 +61,6 @@ export const action: ActionFunction = async ({ request }) => {
     return new Response("Could not parse form data.", { status: 400 });
   }
 
-  // Required Fields
   const full_name = formData.get("full_name")?.toString().trim();
   const email = formData.get("email")?.toString().trim();
   const phone_number = formData.get("phone_number")?.toString().trim();
@@ -60,13 +70,12 @@ export const action: ActionFunction = async ({ request }) => {
   const salary = formData.get("salary")?.toString().trim();
   const start_date = formData.get("start_date")?.toString().trim();
   const father_name = formData.get("father_name")?.toString().trim();
-
-  // Optional Fields
   const end_date = formData.get("end_date")?.toString().trim();
+
   const photoField = formData.get("photo");
   const cvField = formData.get("cv");
 
-  // Validate required fields
+  // Validate fields
   if (
     !full_name ||
     !email ||
@@ -75,25 +84,22 @@ export const action: ActionFunction = async ({ request }) => {
     !job_title ||
     !department ||
     !salary ||
-    !start_date
+    !start_date ||
+    !father_name
   ) {
     return new Response("Missing required fields", { status: 400 });
   }
-
   const salaryNum = parseFloat(salary);
   if (isNaN(salaryNum)) {
     return new Response("Invalid salary value", { status: 400 });
   }
 
-  let photoPath: string | null = null;
-  let cvPath: string | null = null;
-
-  if (typeof photoField === "string" && photoField.trim() !== "") {
-    photoPath = photoField;
-  }
-  if (typeof cvField === "string" && cvField.trim() !== "") {
-    cvPath = cvField;
-  }
+  const photoPath =
+    typeof photoField === "string" && photoField.trim() !== ""
+      ? photoField
+      : null;
+  const cvPath =
+    typeof cvField === "string" && cvField.trim() !== "" ? cvField : null;
 
   const payload = [
     full_name,
@@ -114,23 +120,23 @@ export const action: ActionFunction = async ({ request }) => {
     const { getDB } = await import("~/db/getDB");
     const db = await getDB();
     await db.run(
-      `INSERT INTO employees (
-        full_name,
-        email,
-        phone_number,
-        date_of_birth,
-        job_title,
-        department,
-        salary,
-        start_date,
-        end_date,
-        father_name,
-        photo,
-        cv
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      payload
+      `UPDATE employees SET
+          full_name = ?,
+          email = ?,
+          phone_number = ?,
+          date_of_birth = ?,
+          job_title = ?,
+          department = ?,
+          salary = ?,
+          start_date = ?,
+          end_date = ?,
+          father_name = ?,
+          photo = ?,
+          cv = ?
+        WHERE id = ?`,
+      [...payload, params.employeeId]
     );
-    return new Response("Employee created successfully", {
+    return new Response("Employee updated successfully", {
       status: 200,
       headers: { "Content-Type": "text/plain" },
     });
@@ -143,10 +149,11 @@ export const action: ActionFunction = async ({ request }) => {
   }
 };
 
-export default function NewEmployeePage() {
+export default function EditEmployeePage() {
+  const { employee } = useLoaderData<{ employee: any }>();
   const actionData = useActionData<string>();
-  const navigate = useNavigate();
   const [maxDOB, setMaxDOB] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const today = new Date();
@@ -181,7 +188,7 @@ export default function NewEmployeePage() {
   useEffect(() => {
     if (actionData) {
       alert(actionData);
-      if (actionData === "Employee created successfully") {
+      if (actionData === "Employee updated successfully") {
         setTimeout(() => {
           navigate("/employees");
         }, 1000);
@@ -192,7 +199,7 @@ export default function NewEmployeePage() {
   return (
     <div className="container mx-auto p-4 w-auto h-full">
       <div className="grid grid-cols-2 items-center mb-6">
-        <h1 className="text-3xl font-bold mb-6">Create New Employee</h1>
+        <h1 className="text-3xl font-bold mb-6">Edit Employee</h1>
         <ul className="flex justify-end space-x-4">
           <li>
             <a href="/employees" className="text-blue-600 hover:underline">
@@ -224,6 +231,7 @@ export default function NewEmployeePage() {
             name="full_name"
             id="full_name"
             required
+            defaultValue={employee.full_name}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
@@ -240,6 +248,7 @@ export default function NewEmployeePage() {
             name="email"
             id="email"
             required
+            defaultValue={employee.email}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
@@ -256,6 +265,7 @@ export default function NewEmployeePage() {
             name="phone_number"
             id="phone_number"
             required
+            defaultValue={employee.phone_number}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
@@ -274,6 +284,7 @@ export default function NewEmployeePage() {
             required
             max={maxDOB}
             onBlur={handleDOBBlur}
+            defaultValue={employee.date_of_birth}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
@@ -290,6 +301,7 @@ export default function NewEmployeePage() {
             name="job_title"
             id="job_title"
             required
+            defaultValue={employee.job_title}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
@@ -306,6 +318,7 @@ export default function NewEmployeePage() {
             name="department"
             id="department"
             required
+            defaultValue={employee.department}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
@@ -325,6 +338,7 @@ export default function NewEmployeePage() {
             min="12000"
             onBlur={handleSalaryBlur}
             required
+            defaultValue={employee.salary}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
@@ -341,6 +355,7 @@ export default function NewEmployeePage() {
             name="start_date"
             id="start_date"
             required
+            defaultValue={employee.start_date}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
@@ -356,10 +371,10 @@ export default function NewEmployeePage() {
             type="text"
             name="father_name"
             id="father_name"
+            defaultValue={employee.father_name || ""}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
-        {/* Optional: End Date */}
         <div>
           <label
             htmlFor="end_date"
@@ -371,10 +386,10 @@ export default function NewEmployeePage() {
             type="date"
             name="end_date"
             id="end_date"
+            defaultValue={employee.end_date || ""}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
-        {/* Optional: Upload CV */}
         <div>
           <label
             htmlFor="cv"
@@ -390,7 +405,6 @@ export default function NewEmployeePage() {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
-        {/* Optional: Upload Photo */}
         <div>
           <label
             htmlFor="photo"
@@ -406,17 +420,15 @@ export default function NewEmployeePage() {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-md p-2 h-10 focus:outline-2 focus:outline-offset-2 focus:outline-blue-500"
           />
         </div>
-        {/* Submit Button */}
-        <div className="col-span-1 md:col-span-3 flex justify-center">
+        <div className="col-span-3 flex justify-center">
           <button
             type="submit"
             className="w-auto py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
           >
-            Create Employee
+            Update Employee
           </button>
         </div>
       </form>
-      <hr className="my-6" />
     </div>
   );
 }

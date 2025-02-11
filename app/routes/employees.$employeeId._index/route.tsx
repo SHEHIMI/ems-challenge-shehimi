@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router-dom";
 import type { LoaderFunction } from "@remix-run/node";
 
-// Loader functionse
+// Loader function
 export const loader: LoaderFunction = async ({ params }) => {
   const { getDB } = await import("~/db/getDB");
   const db = await getDB();
@@ -18,15 +18,25 @@ export const loader: LoaderFunction = async ({ params }) => {
 };
 
 export default function EmployeePage() {
-  // Retrieve employeefrom loader
   const { employee } = useLoaderData<{ employee: any }>();
 
   return (
     <div className="container mx-auto p-4">
-      {/* Card Container */}
       <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
         <div className="p-4">
-          <h2 className="text-2xl font-bold mb-2">{employee.full_name}</h2>
+          <div className="flex justify-between">
+            <h2 className="text-2xl font-bold mb-2">{employee.full_name}</h2>
+            <ul>
+              <li>
+                <a
+                  href={`/employees/${employee.id}/edit`}
+                  className="text-blue-600 hover:underline"
+                >
+                  Edit
+                </a>
+              </li>
+            </ul>
+          </div>
           <p className="text-gray-700 mb-2">
             <strong>Email:</strong> {employee.email}
           </p>
