@@ -1,4 +1,3 @@
-// app/routes/timesheets/new.tsx
 import {
   useLoaderData,
   useActionData,
@@ -10,18 +9,23 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { getDB } from "~/db/getDB";
 import { useState, useEffect } from "react";
 
-// Loader: Fetch employees to populate the dropdown.
-export const loader: LoaderFunction = async () => {
+// Loader: Fetch the timesheet record and a list of employees.
+export const loader: LoaderFunction = async ({ params }) => {
   const db = await getDB();
+  const timesheet = await db.get("SELECT * FROM timesheets WHERE id = ?", [
+    params.timesheetId,
+  ]);
+  if (!timesheet) {
+    throw new Response("Timesheet not found", { status: 404 });
+  }
+  // Fetch employees for the dropdown.
   const employees = await db.all("SELECT id, full_name FROM employees;");
-  return { employees };
+  return { timesheet, employees };
 };
 
-// Action: Create a new timesheet.
-export const action: ActionFunction = async ({ request }) => {
+// Action: Process the form submission to update the timesheet.
+export const action: ActionFunction = async ({ request, params }) => {
   const formData = await request.formData();
-
-  // Extract and trim fields.
   const start_time = formData.get("start_time")?.toString().trim();
   const end_time = formData.get("end_time")?.toString().trim();
   const employee_id = formData.get("employee_id")?.toString().trim();
@@ -40,30 +44,35 @@ export const action: ActionFunction = async ({ request }) => {
   const db = await getDB();
   try {
     await db.run(
-      `INSERT INTO timesheets (start_time, end_time, employee_id, summary)
-       VALUES (?, ?, ?, ?)`,
-      [start_time, end_time, employee_id, summary || null]
+      `UPDATE timesheets SET 
+          start_time = ?,
+          end_time = ?,
+          employee_id = ?,
+          summary = ?
+       WHERE id = ?`,
+      [start_time, end_time, employee_id, summary || null, params.timesheetId]
     );
-    return new Response("Timesheet created successfully", {
+    return new Response("Timesheet updated successfully", {
       status: 200,
       headers: { "Content-Type": "text/plain" },
     });
   } catch (error: any) {
+    console.error("DB Error:", error);
     return new Response(error.message, { status: 400 });
   }
 };
 
-export default function NewTimesheetPage() {
-  const { employees } = useLoaderData<{
-    employees: { id: number; full_name: string }[];
+export default function EditTimesheetPage() {
+  const { timesheet, employees } = useLoaderData<{
+    timesheet: any;
+    employees: any[];
   }>();
   const actionData = useActionData<string>();
   const navigate = useNavigate();
+  const [startTime, setStartTime] = useState(timesheet.start_time);
+  const [endTime, setEndTime] = useState(timesheet.end_time);
 
-  // For client-side validation
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-
+  // Validate times when focus leaves the time fields.
   const handleTimeBlur = () => {
     if (startTime && endTime) {
       const start = new Date(startTime);
@@ -77,7 +86,7 @@ export default function NewTimesheetPage() {
   useEffect(() => {
     if (actionData) {
       alert(actionData);
-      if (actionData === "Timesheet created successfully") {
+      if (actionData === "Timesheet updated successfully") {
         setTimeout(() => {
           navigate("/timesheets");
         }, 1000);
@@ -89,22 +98,14 @@ export default function NewTimesheetPage() {
     <div className="container mx-auto p-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Create Timesheet</h1>
+        <h1 className="text-3xl font-bold">Edit Timesheet</h1>
         <div className="flex space-x-4">
-          <ul>
-            <li>
-              <a href="/employees" className="text-blue-600 hover:underline">
-                Employees
-              </a>
-            </li>
-          </ul>
-          <ul>
-            <li>
-              <a href="/timesheets" className="text-blue-600 hover:underline">
-                All Timesheets
-              </a>
-            </li>
-          </ul>
+          <Link to="/employees" className="text-blue-600 hover:underline">
+            Employees
+          </Link>
+          <Link to="/timesheets" className="text-blue-600 hover:underline">
+            All Timesheets
+          </Link>
         </div>
       </div>
       <Form method="post" className="grid grid-cols-1 gap-6">
@@ -120,6 +121,7 @@ export default function NewTimesheetPage() {
             name="start_time"
             id="start_time"
             required
+            defaultValue={timesheet.start_time}
             onChange={(e) => setStartTime(e.target.value)}
             onBlur={handleTimeBlur}
             className="mt-1 block w-full border border-blue-500 rounded-md p-2"
@@ -137,6 +139,7 @@ export default function NewTimesheetPage() {
             name="end_time"
             id="end_time"
             required
+            defaultValue={timesheet.end_time}
             onChange={(e) => setEndTime(e.target.value)}
             onBlur={handleTimeBlur}
             className="mt-1 block w-full border border-blue-500 rounded-md p-2"
@@ -153,6 +156,7 @@ export default function NewTimesheetPage() {
             name="employee_id"
             id="employee_id"
             required
+            defaultValue={timesheet.employee_id}
             className="mt-1 block w-full border border-blue-500 rounded-md p-2"
           >
             <option value="">Select an employee</option>
@@ -175,6 +179,7 @@ export default function NewTimesheetPage() {
             name="summary"
             id="summary"
             placeholder="Work done during this timesheet period"
+            defaultValue={timesheet.summary || ""}
             className="mt-1 block w-full border border-blue-500 rounded-md p-2"
           />
         </div>
@@ -183,7 +188,7 @@ export default function NewTimesheetPage() {
             type="submit"
             className="py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
-            Save Timesheet
+            Update Timesheet
           </button>
         </div>
       </Form>

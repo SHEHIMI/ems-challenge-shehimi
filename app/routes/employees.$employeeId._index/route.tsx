@@ -104,8 +104,16 @@ export default function EmployeePage() {
           </a>
         </li>
         <li>
-          <a href="/timesheets" className="text-blue-600 hover:underline">
+          <a
+            href={`/employees/${employee.id}/timesheets`}
+            className="text-blue-600 hover:underline"
+          >
             Timesheets
+          </a>
+        </li>
+        <li>
+          <a href="/timesheets" className="text-blue-600 hover:underline">
+            All Timesheets
           </a>
         </li>
       </ul>

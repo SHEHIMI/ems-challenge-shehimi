@@ -208,7 +208,7 @@ export default function EditEmployeePage() {
           </li>
           <li>
             <a href="/timesheets" className="text-blue-600 hover:underline">
-              Timesheets
+              All Timesheets
             </a>
           </li>
         </ul>
