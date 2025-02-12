@@ -1,4 +1,3 @@
-// app/routes/timesheets/new.tsx
 import {
   useLoaderData,
   useActionData,
@@ -10,18 +9,15 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { getDB } from "~/db/getDB";
 import { useState, useEffect } from "react";
 
-// Loader: Fetch employees to populate the dropdown.
 export const loader: LoaderFunction = async () => {
   const db = await getDB();
   const employees = await db.all("SELECT id, full_name FROM employees;");
   return { employees };
 };
 
-// Action: Create a new timesheet.
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
 
-  // Extract and trim fields.
   const start_time = formData.get("start_time")?.toString().trim();
   const end_time = formData.get("end_time")?.toString().trim();
   const employee_id = formData.get("employee_id")?.toString().trim();
@@ -60,7 +56,6 @@ export default function NewTimesheetPage() {
   const actionData = useActionData<string>();
   const navigate = useNavigate();
 
-  // For client-side validation
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
 
@@ -91,20 +86,12 @@ export default function NewTimesheetPage() {
       <div className="flex flex-col md:flex-row md:justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Create Timesheet</h1>
         <div className="flex space-x-4">
-          <ul>
-            <li>
-              <a href="/employees" className="text-blue-600 hover:underline">
-                Employees
-              </a>
-            </li>
-          </ul>
-          <ul>
-            <li>
-              <a href="/timesheets" className="text-blue-600 hover:underline">
-                All Timesheets
-              </a>
-            </li>
-          </ul>
+          <Link to={"/employees"} className="text-blue-600 hover:underline">
+            Employees
+          </Link>
+          <Link to={"/timesheets"} className="text-blue-600 hover:underline">
+            All Timesheets
+          </Link>
         </div>
       </div>
       <Form method="post" className="grid grid-cols-1 gap-6">

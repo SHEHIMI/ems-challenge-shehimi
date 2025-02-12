@@ -1,4 +1,9 @@
-import { useLoaderData, useActionData, useNavigate } from "react-router-dom";
+import {
+  useLoaderData,
+  useActionData,
+  useNavigate,
+  Link,
+} from "react-router-dom";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { useEffect, useState } from "react";
 
@@ -201,16 +206,12 @@ export default function EditEmployeePage() {
       <div className="grid grid-cols-2 items-center mb-6">
         <h1 className="text-3xl font-bold mb-6">Edit Employee</h1>
         <ul className="flex justify-end space-x-4">
-          <li>
-            <a href="/employees" className="text-blue-600 hover:underline">
-              Employees
-            </a>
-          </li>
-          <li>
-            <a href="/timesheets" className="text-blue-600 hover:underline">
-              All Timesheets
-            </a>
-          </li>
+          <Link to={"/employees"} className="text-blue-600 hover:underline">
+            Employees
+          </Link>
+          <Link to={"/timesheets"} className="text-blue-600 hover:underline">
+            All Timesheets
+          </Link>
         </ul>
       </div>
       <form

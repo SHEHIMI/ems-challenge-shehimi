@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useActionData, useNavigate } from "react-router-dom";
+import { Link, useActionData, useNavigate } from "react-router-dom";
 import type { ActionFunction } from "@remix-run/node";
 
 // helper
@@ -194,16 +194,12 @@ export default function NewEmployeePage() {
       <div className="grid grid-cols-2 items-center mb-6">
         <h1 className="text-3xl font-bold mb-6">Create New Employee</h1>
         <ul className="flex justify-end space-x-4">
-          <li>
-            <a href="/employees" className="text-blue-600 hover:underline">
-              Employees
-            </a>
-          </li>
-          <li>
-            <a href="/timesheets" className="text-blue-600 hover:underline">
-              Timesheets
-            </a>
-          </li>
+          <Link to={"/employees"} className="text-blue-600 hover:underline">
+            Employees
+          </Link>
+          <Link to={"/timesheets"} className="text-blue-600 hover:underline">
+            Timesheets
+          </Link>
         </ul>
       </div>
       <form

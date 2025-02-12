@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
 import type { LoaderFunction } from "@remix-run/node";
 
 // Loader function
@@ -26,16 +26,12 @@ export default function EmployeePage() {
         <div className="p-4">
           <div className="flex justify-between">
             <h2 className="text-2xl font-bold mb-2">{employee.full_name}</h2>
-            <ul>
-              <li>
-                <a
-                  href={`/employees/${employee.id}/edit`}
-                  className="text-blue-600 hover:underline"
-                >
-                  Edit
-                </a>
-              </li>
-            </ul>
+            <Link
+              to={`/employees/${employee.id}/edit`}
+              className="text-blue-600 hover:underline"
+            >
+              Edit
+            </Link>
           </div>
           <p className="text-gray-700 mb-2">
             <strong>Email:</strong> {employee.email}
@@ -93,29 +89,21 @@ export default function EmployeePage() {
       </div>
       {/* Navigation Links */}
       <ul className="flex space-x-4 mt-6 justify-center">
-        <li>
-          <a href="/employees" className="text-blue-600 hover:underline">
-            Employees
-          </a>
-        </li>
-        <li>
-          <a href="/employees/new" className="text-blue-600 hover:underline">
-            New Employee
-          </a>
-        </li>
-        <li>
-          <a
-            href={`/employees/${employee.id}/timesheets`}
-            className="text-blue-600 hover:underline"
-          >
-            Timesheets
-          </a>
-        </li>
-        <li>
-          <a href="/timesheets" className="text-blue-600 hover:underline">
-            All Timesheets
-          </a>
-        </li>
+        <Link to={"/employees/"} className="text-blue-600 hover:underline">
+          Employees
+        </Link>
+        <Link to={"/employees/new"} className="text-blue-600 hover:underline">
+          New Employee
+        </Link>
+        <Link
+          to={`/employees/${employee.id}/timesheets`}
+          className="text-blue-600 hover:underline"
+        >
+          Timesheets
+        </Link>
+        <Link to={"/timesheets"} className="text-blue-600 hover:underline">
+          All Timesheets
+        </Link>
       </ul>
     </div>
   );

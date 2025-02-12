@@ -1,11 +1,10 @@
-// app/routes/timesheets/$timesheetId.tsx
 import { useLoaderData, Link } from "react-router-dom";
 import type { LoaderFunction } from "@remix-run/node";
 import { getDB } from "~/db/getDB";
 
 export const loader: LoaderFunction = async ({ params }) => {
   const db = await getDB();
-  // Fetch the timesheet record and join with the employees table for the employee name.
+  // Fetch the timesheet and join with the employees table
   const timesheet = await db.get(
     `SELECT t.*, e.full_name AS employee_name 
      FROM timesheets t

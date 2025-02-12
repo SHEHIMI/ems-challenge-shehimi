@@ -76,33 +76,21 @@ export default function EmployeesPage() {
             className="border border-blue-500 rounded-md p-2"
           />
           <div className="flex space-x-4">
-            <ul>
-              <li>
-                <a
-                  href="/employees/new"
-                  className="text-blue-600 hover:underline"
-                >
-                  New Employee
-                </a>
-              </li>
-            </ul>
-            <ul>
-              <li>
-                <a
-                  href="/timesheets/new"
-                  className="text-blue-600 hover:underline"
-                >
-                  New Timesheet
-                </a>
-              </li>
-            </ul>
-            <ul>
-              <li>
-                <a href="/timesheets" className="text-blue-600 hover:underline">
-                  All Timesheets
-                </a>
-              </li>
-            </ul>
+            <Link
+              to={"/employees/new"}
+              className="text-blue-600 hover:underline"
+            >
+              New Employee
+            </Link>
+            <Link
+              to={"/timesheets/new"}
+              className="text-blue-600 hover:underline"
+            >
+              New Timesheet
+            </Link>
+            <Link to={"/timesheets"} className="text-blue-600 hover:underline">
+              All Timesheets
+            </Link>
           </div>
         </div>
       </div>

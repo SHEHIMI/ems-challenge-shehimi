@@ -40,7 +40,7 @@ export default function EmployeeTimesheetsPage() {
             All Timesheets
           </Link>
           <Link
-            to={`/employees/${employee.id}/timesheets/new`}
+            to={`/timesheets/new`}
             className="text-blue-600 hover:underline"
           >
             New Timesheet

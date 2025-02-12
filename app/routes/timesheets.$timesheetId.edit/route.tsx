@@ -9,7 +9,6 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { getDB } from "~/db/getDB";
 import { useState, useEffect } from "react";
 
-// Loader: Fetch the timesheet record and a list of employees.
 export const loader: LoaderFunction = async ({ params }) => {
   const db = await getDB();
   const timesheet = await db.get("SELECT * FROM timesheets WHERE id = ?", [
@@ -18,12 +17,11 @@ export const loader: LoaderFunction = async ({ params }) => {
   if (!timesheet) {
     throw new Response("Timesheet not found", { status: 404 });
   }
-  // Fetch employees for the dropdown.
+  // Fetch employees
   const employees = await db.all("SELECT id, full_name FROM employees;");
   return { timesheet, employees };
 };
 
-// Action: Process the form submission to update the timesheet.
 export const action: ActionFunction = async ({ request, params }) => {
   const formData = await request.formData();
   const start_time = formData.get("start_time")?.toString().trim();
