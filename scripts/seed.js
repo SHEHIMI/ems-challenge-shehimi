@@ -13,12 +13,11 @@ const dbConfig = yaml.load(fs.readFileSync(dbConfigPath, "utf8"));
 const { sqlite_path: sqlitePath } = dbConfig;
 
 const db = new sqlite3.Database(sqlitePath);
-
 const employees = [
   {
     full_name: "John Doe",
     email: "john.doe@gmail.com",
-    phone_number: "81900482",
+    phone_number: 81900482,
     date_of_birth: "1985-06-15",
     job_title: "Software Engineer",
     department: "Engineering",
@@ -32,7 +31,7 @@ const employees = [
   {
     full_name: "Jane Smith",
     email: "jane.smith@gmail.com",
-    phone_number: "81700987",
+    phone_number: 81700987,
     date_of_birth: "1990-09-20",
     job_title: "Project Manager",
     department: "Engineering",
@@ -46,7 +45,7 @@ const employees = [
   {
     full_name: "Alice Johnson",
     email: "alice.johnson@gmail.com",
-    phone_number: "03458922",
+    phone_number: 3458922,
     date_of_birth: "1992-11-05",
     job_title: "HR Manager",
     department: "HR",
@@ -64,16 +63,25 @@ const timesheets = [
     employee_id: 1,
     start_time: "2025-02-10 08:00:00",
     end_time: "2025-02-10 17:00:00",
+    summary: "Fixed Bugs in webserver",
   },
   {
     employee_id: 2,
     start_time: "2025-02-11 12:00:00",
     end_time: "2025-02-11 17:00:00",
+    summary: "Implemented AI Features",
   },
   {
     employee_id: 3,
     start_time: "2025-02-12 07:00:00",
     end_time: "2025-02-12 16:00:00",
+    summary: "Handled HR interviews",
+  },
+  {
+    employee_id: 1,
+    start_time: "2025-02-13 09:00:00",
+    end_time: "2025-02-13 18:00:00",
+    summary: "Developed new features",
   },
 ];
 
